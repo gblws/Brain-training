@@ -1,0 +1,78 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "Home"
+      }
+    },
+    {
+      "path": "pages/games/schulte",
+      "style": {
+        "navigationBarTitleText": "Schulte Grid"
+      }
+    },
+    {
+      "path": "pages/games/stroop",
+      "style": {
+        "navigationBarTitleText": "Stroop Challenge"
+      }
+    },
+    {
+      "path": "pages/games/memory",
+      "style": {
+        "navigationBarTitleText": "Memory Matrix"
+      }
+    },
+    {
+      "path": "pages/guides/intro",
+      "style": {
+        "navigationBarTitleText": "Game Guide"
+      }
+    },
+    {
+      "path": "pages/user/history",
+      "style": {
+        "navigationBarTitleText": "History"
+      }
+    },
+    {
+      "path": "pages/user/player",
+      "style": {
+        "navigationBarTitleText": "Player"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#9CA3AF",
+    "selectedColor": "#2AA4F4",
+    "borderStyle": "black",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "Home",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/user/history",
+        "text": "History",
+        "iconPath": "static/tabbar/history.png",
+        "selectedIconPath": "static/tabbar/history-active.png"
+      },
+      {
+        "pagePath": "pages/user/player",
+        "text": "Player",
+        "iconPath": "static/tabbar/player.png",
+        "selectedIconPath": "static/tabbar/player-active.png"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "Brain Training",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F5F7FB"
+  }
+}

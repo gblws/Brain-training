@@ -1,0 +1,22 @@
+﻿# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Frontend build outputs
+frontend/unpackage/
+frontend/dist/
+
+# Backend build outputs
+backend/target/
+backend/logs/
+
+# Logs
+*.log
+
+# Env
+.env
+.env.*
