@@ -29,7 +29,7 @@ ai:
   deepseek:
     base-url: https://api.deepseek.com/v1
     model: deepseek-chat
-    api-key: sk-9af6a9bf4bc344498ba89c2e352ed4b0
+    api-key: 
     timeout-seconds: 40
     max-tokens: 500
   report:
