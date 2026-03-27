@@ -1,11 +1,6 @@
 <template>
   <view class="page">
-    <view v-if="!loggedIn" class="empty-card">
-      <text class="empty-title">Record History</text>
-      <text class="empty-text">Please log in first to view your own game records.</text>
-    </view>
-
-    <template v-else>
+    <template v-if="loggedIn">
     <view class="head">
       <view>
         <text class="title">历史记录</text>
@@ -47,6 +42,7 @@ const GAME_NAME_MAP = {
 const loading = ref(false);
 const records = ref([]);
 const loggedIn = ref(false);
+const redirectingToLogin = ref(false);
 
 const mapGameName = (value) => GAME_NAME_MAP[value] || value || '未知游戏';
 
@@ -79,6 +75,23 @@ const loadHistory = async () => {
   loggedIn.value = !!getAuthToken();
   if (!loggedIn.value) {
     records.value = [];
+    if (!redirectingToLogin.value) {
+      redirectingToLogin.value = true;
+      uni.showModal({
+        title: '请先登录',
+        content: '登录后才可以查看历史记录。',
+        showCancel: false,
+        confirmText: '去登录',
+        success: () => {
+          uni.switchTab({ url: '/pages/user/player' });
+        },
+        complete: () => {
+          setTimeout(() => {
+            redirectingToLogin.value = false;
+          }, 300);
+        }
+      });
+    }
     return;
   }
   try {
@@ -103,29 +116,6 @@ onShow(() => {
   min-height: 100vh;
   padding: 26rpx 24rpx 32rpx;
   background: linear-gradient(180deg, #eefaf8 0%, #f8fbff 100%);
-}
-
-.empty-card {
-  min-height: calc(100vh - 58rpx);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 0 50rpx;
-}
-
-.empty-title {
-  color: #0f172a;
-  font-size: 38rpx;
-  font-weight: 800;
-}
-
-.empty-text {
-  margin-top: 14rpx;
-  color: #64748b;
-  font-size: 28rpx;
-  line-height: 1.6;
 }
 
 .head {

@@ -105,13 +105,6 @@ public class AiCoachServiceImpl implements AiCoachService {
         try {
             WeekStats currentWeekStats = calculateWeekStats(subjectId, weekStart, weekEnd);
             WeekStats previousWeekStats = calculateWeekStats(subjectId, weekStart.minusWeeks(1), weekEnd.minusWeeks(1));
-            boolean useDemoData = currentWeekStats.count <= 0;
-            if (useDemoData) {
-                currentWeekStats = buildDemoWeekStats(subjectId, weekStart, false);
-                if (previousWeekStats.count <= 0) {
-                    previousWeekStats = buildDemoWeekStats(subjectId, weekStart.minusWeeks(1), true);
-                }
-            }
 
             AiWeeklyReportResponse response;
             if (!StringUtils.hasText(deepseekApiKey)) {
@@ -122,9 +115,6 @@ public class AiCoachServiceImpl implements AiCoachService {
                 String modelRaw = callDeepSeek(prompt);
                 response = buildAiResponse(subjectId, weekStart, weekEnd, currentWeekStats, previousWeekStats,
                         modelRaw);
-            }
-            if (useDemoData) {
-                markDemoResponse(response);
             }
 
             Duration ttl = Duration.ofMinutes(Math.max(5, reportCacheTtlMinutes == null ? 60 : reportCacheTtlMinutes));
@@ -413,43 +403,6 @@ public class AiCoachServiceImpl implements AiCoachService {
 
     private String cacheKey(String subjectId, LocalDate weekStart, LocalDate weekEnd) {
         return "ai:weekly-report:" + subjectId + ":" + weekStart + ":" + weekEnd;
-    }
-
-    private void markDemoResponse(AiWeeklyReportResponse response) {
-        if (response == null) {
-            return;
-        }
-        response.setSource("ai-demo");
-        if (StringUtils.hasText(response.getSummary())) {
-            response.setSummary("[DEMO] " + response.getSummary());
-        }
-        if (StringUtils.hasText(response.getTrend())) {
-            response.setTrend("[DEMO] " + response.getTrend());
-        }
-    }
-
-    private WeekStats buildDemoWeekStats(String subjectId, LocalDate weekStart, boolean previousWeek) {
-        int seed = Math.abs((subjectId + weekStart).hashCode());
-        WeekStats stats = new WeekStats();
-        stats.count = previousWeek ? 2 : 3;
-
-        double observationBase = previousWeek ? 68 : 76;
-        double memoryBase = previousWeek ? 62 : 74;
-        double spatialBase = previousWeek ? 58 : 69;
-        double calculationBase = previousWeek ? 71 : 77;
-        double reasoningBase = previousWeek ? 64 : 73;
-        double creativityBase = 50;
-
-        // 临时虚拟数据，保证每次相同 subjectId 与周区间生成结果稳定，便于调试 AI 输出。
-        stats.observation = round2(observationBase + (seed % 5));
-        stats.memory = round2(memoryBase + ((seed / 10) % 6));
-        stats.spatial = round2(spatialBase + ((seed / 100) % 7));
-        stats.calculation = round2(calculationBase + ((seed / 1000) % 5));
-        stats.reasoning = round2(reasoningBase + ((seed / 10000) % 6));
-        stats.creativity = creativityBase;
-        stats.overall = round2((stats.observation + stats.memory + stats.spatial + stats.calculation + stats.reasoning
-                + stats.creativity) / 6D);
-        return stats;
     }
 
     private Map<String, Double> buildDimensionMap(WeekStats stats) {

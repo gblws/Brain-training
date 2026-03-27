@@ -5,6 +5,7 @@ import com.project.brain.dto.AuthLoginRequest;
 import com.project.brain.dto.AuthLoginResponse;
 import com.project.brain.dto.AuthProfileUpdateRequest;
 import com.project.brain.dto.AuthRegisterRequest;
+import com.project.brain.dto.AuthSendCodeRequest;
 import com.project.brain.dto.AuthUserResponse;
 import com.project.brain.service.AuthService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,12 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    @PostMapping("/send-code")
+    public Result<Boolean> sendCode(@RequestBody AuthSendCodeRequest request) {
+        authService.sendRegisterCode(request);
+        return Result.success("验证码发送成功", Boolean.TRUE);
     }
 
     @PostMapping("/register")

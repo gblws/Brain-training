@@ -2,15 +2,15 @@
   <view class="page">
     <view class="help-btn" @click="goGuide">?</view>
     <view class="hero">
-      <text class="hero-title">Train your memory and attention</text>
+      <text class="hero-title">记忆矩阵训练</text>
       <text class="hero-sub">{{ heroSub }}</text>
     </view>
 
     <view class="board-wrap">
       <view class="tips">
-        <text v-if="phase === 'preview'">Watch highlighted cells for {{ previewSeconds }} seconds</text>
-        <text v-else-if="phase === 'answer'">Repeat the pattern ({{ selectedSet.size }}/{{ targetSet.size }})</text>
-        <text v-else>Preparing...</text>
+        <text v-if="phase === 'preview'">请在 {{ previewSeconds }} 秒内记住高亮格子</text>
+        <text v-else-if="phase === 'answer'">请复现图案（{{ selectedSet.size }}/{{ targetSet.size }}）</text>
+        <text v-else>准备中...</text>
       </view>
 
       <view class="board">
@@ -25,7 +25,7 @@
         </view>
       </view>
 
-      <button class="restart" @click="resetGame">{{ isBaselineMode ? 'Restart Test' : 'Reset Level' }}</button>
+      <button class="restart" @click="resetGame">{{ isBaselineMode ? '重新开始测试' : '重置当前难度' }}</button>
     </view>
 
     <GameResultModal
@@ -114,9 +114,9 @@ const previewSeconds = computed(() => ((isBaselineMode.value ? 2000 : difficulty
 const canLowerLevel = computed(() => currentLevel.value > MIN_LEVEL);
 const heroSub = computed(() => {
   if (isBaselineMode.value) {
-    return `Round ${currentRound.value}/${baselineTotalRounds} - Level ${currentLevel.value}`;
+    return `第 ${currentRound.value}/${baselineTotalRounds} 轮 · 当前等级 ${currentLevel.value}`;
   }
-  return `${difficultyConfig.value.name} | Round ${currentRound.value}/${normalTotalRounds} | Level ${currentLevel.value} - ${gridSize.value}x${gridSize.value}`;
+  return `${difficultyConfig.value.name} · 第 ${currentRound.value}/${normalTotalRounds} 轮 · 等级 ${currentLevel.value} · ${gridSize.value}x${gridSize.value}`;
 });
 
 const goGuide = () => {
@@ -281,7 +281,7 @@ const finishBaselineRound = (success) => {
     const rawScore = highestLevel.value * 12.5;
     const score = Math.min(100, Math.max(0, Math.round(rawScore)));
     const accuracy = successCount.value / baselineTotalRounds;
-    const message = `Highest Lv ${highestLevel.value}, Wrong ${errorCount.value}, Score ${score}`;
+    const message = `最高等级 ${highestLevel.value}，错误 ${errorCount.value} 次，得分 ${score}`;
     submitAndReset(score, accuracy, message);
     return;
   }

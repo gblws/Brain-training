@@ -5,10 +5,12 @@ import com.project.brain.dto.AuthLoginRequest;
 import com.project.brain.dto.AuthLoginResponse;
 import com.project.brain.dto.AuthProfileUpdateRequest;
 import com.project.brain.dto.AuthRegisterRequest;
+import com.project.brain.dto.AuthSendCodeRequest;
 import com.project.brain.dto.AuthUserResponse;
 import com.project.brain.model.AppUser;
 import com.project.brain.repository.UserRepository;
 import com.project.brain.service.AuthService;
+import com.project.brain.service.SmsService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,24 +28,43 @@ public class AuthServiceImpl implements AuthService {
 
     private static final int TOKEN_DAYS = 30;
     private static final Pattern CN_PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^[A-Za-z0-9]{6,18}$");
     private static final Duration PROFILE_CACHE_TTL = Duration.ofMinutes(30);
 
     private final UserRepository userRepository;
     private final RedisCacheService redisCacheService;
+    private final SmsService smsService;
 
-    public AuthServiceImpl(UserRepository userRepository, RedisCacheService redisCacheService) {
+    public AuthServiceImpl(UserRepository userRepository, RedisCacheService redisCacheService, SmsService smsService) {
         this.userRepository = userRepository;
         this.redisCacheService = redisCacheService;
+        this.smsService = smsService;
+    }
+
+    @Override
+    public void sendRegisterCode(AuthSendCodeRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("请求参数不能为空");
+        }
+        String username = normalizeUsername(request.getUsername());
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("该手机号已注册");
+        }
+        smsService.sendRegisterCode(username);
     }
 
     @Override
     public AuthLoginResponse register(AuthRegisterRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("请求参数不能为空");
+        }
         String username = normalizeUsername(request.getUsername());
-        String password = request.getPassword();
+        String password = normalizePassword(request.getPassword());
         String nickname = normalizeNickname(request.getNickname(), username);
+        smsService.verifyRegisterCode(username, request.getVerifyCode());
 
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("username already exists");
+            throw new IllegalArgumentException("该手机号已注册");
         }
 
         AppUser user = new AppUser();
@@ -66,14 +87,14 @@ public class AuthServiceImpl implements AuthService {
         String username = normalizeUsername(request.getUsername());
         String password = request.getPassword();
         if (!StringUtils.hasText(password)) {
-            throw new IllegalArgumentException("password is required");
+            throw new IllegalArgumentException("请输入密码");
         }
 
         AppUser user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new IllegalArgumentException("username or password is invalid"));
+            .orElseThrow(() -> new IllegalArgumentException("手机号或密码错误"));
 
         if (!hash(password).equals(user.getPasswordHash())) {
-            throw new IllegalArgumentException("username or password is invalid");
+            throw new IllegalArgumentException("手机号或密码错误");
         }
 
         String oldToken = user.getLoginToken();
@@ -97,12 +118,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         AppUser user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new IllegalArgumentException("login expired, please login again"));
+            .orElseThrow(() -> new IllegalArgumentException("登录已失效，请重新登录"));
         if (!normalizedToken.equals(user.getLoginToken())
             || user.getTokenExpireTime() == null
             || user.getTokenExpireTime().isBefore(LocalDateTime.now())) {
             evictToken(normalizedToken);
-            throw new IllegalArgumentException("login expired, please login again");
+            throw new IllegalArgumentException("登录已失效，请重新登录");
         }
 
         AuthUserResponse response = toUserResponse(user);
@@ -118,14 +139,14 @@ public class AuthServiceImpl implements AuthService {
             if (request.getNickname() != null) {
                 String nickname = request.getNickname().trim();
                 if (nickname.length() > 20) {
-                    throw new IllegalArgumentException("nickname length must be <= 20");
+                    throw new IllegalArgumentException("昵称长度不能超过20个字符");
                 }
                 user.setNickname(nickname);
             }
             if (request.getAvatarUrl() != null) {
                 String avatarUrl = request.getAvatarUrl().trim();
                 if (avatarUrl.length() > 512) {
-                    throw new IllegalArgumentException("avatarUrl is too long");
+                    throw new IllegalArgumentException("头像地址过长");
                 }
                 user.setAvatarUrl(avatarUrl);
             }
@@ -161,14 +182,14 @@ public class AuthServiceImpl implements AuthService {
         String normalizedToken = normalizeToken(token);
         String username = resolveUsernameByToken(normalizedToken);
         AppUser user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new IllegalArgumentException("login expired, please login again"));
+            .orElseThrow(() -> new IllegalArgumentException("登录已失效，请重新登录"));
         if (!normalizedToken.equals(user.getLoginToken())) {
             evictToken(normalizedToken);
-            throw new IllegalArgumentException("login expired, please login again");
+            throw new IllegalArgumentException("登录已失效，请重新登录");
         }
         if (user.getTokenExpireTime() == null || user.getTokenExpireTime().isBefore(LocalDateTime.now())) {
             evictToken(normalizedToken);
-            throw new IllegalArgumentException("login expired, please login again");
+            throw new IllegalArgumentException("登录已失效，请重新登录");
         }
         return user;
     }
@@ -180,9 +201,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         AppUser user = userRepository.findByLoginToken(normalizedToken)
-            .orElseThrow(() -> new IllegalArgumentException("login expired, please login again"));
+            .orElseThrow(() -> new IllegalArgumentException("登录已失效，请重新登录"));
         if (user.getTokenExpireTime() == null || user.getTokenExpireTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("login expired, please login again");
+            throw new IllegalArgumentException("登录已失效，请重新登录");
         }
         cacheToken(normalizedToken, user.getUsername(), user.getTokenExpireTime());
         return user.getUsername();
@@ -194,7 +215,7 @@ public class AuthServiceImpl implements AuthService {
 
     private String normalizeToken(String token) {
         if (!StringUtils.hasText(token)) {
-            throw new IllegalArgumentException("token is required");
+            throw new IllegalArgumentException("缺少登录凭证");
         }
         return token.trim();
     }
@@ -264,11 +285,11 @@ public class AuthServiceImpl implements AuthService {
 
     private String normalizeUsername(String username) {
         if (!StringUtils.hasText(username)) {
-            throw new IllegalArgumentException("phone is required");
+            throw new IllegalArgumentException("请输入手机号");
         }
         String value = username.trim().replace(" ", "");
         if (!CN_PHONE_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("phone format is invalid");
+            throw new IllegalArgumentException("请输入有效手机号");
         }
         return value;
     }
@@ -279,14 +300,25 @@ public class AuthServiceImpl implements AuthService {
         }
         String value = nickname.trim();
         if (value.length() > 20) {
-            throw new IllegalArgumentException("nickname length must be <= 20");
+            throw new IllegalArgumentException("昵称长度不能超过20个字符");
+        }
+        return value;
+    }
+
+    private String normalizePassword(String raw) {
+        if (!StringUtils.hasText(raw)) {
+            throw new IllegalArgumentException("请输入密码");
+        }
+        String value = raw.trim();
+        if (!PASSWORD_PATTERN.matcher(value).matches()) {
+            throw new IllegalArgumentException("密码需为6-18位字母或数字");
         }
         return value;
     }
 
     private String hash(String raw) {
         if (!StringUtils.hasText(raw)) {
-            throw new IllegalArgumentException("password is required");
+            throw new IllegalArgumentException("请输入密码");
         }
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

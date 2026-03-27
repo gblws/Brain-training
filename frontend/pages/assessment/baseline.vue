@@ -34,7 +34,6 @@ import { get, getAuthToken, post } from '../../utils/request.js';
 
 const SCORE_KEY = 'baseline_scores_v1';
 const COMPLETE_KEY = 'baseline_completed_v1';
-const BASELINE_RESULT_KEY = 'baseline_latest_result_v1';
 
 const submitting = ref(false);
 const isLoggedIn = ref(false);
@@ -141,7 +140,6 @@ const doSubmitBaseline = async () => {
       memoryScore: taskScores.value.memory
     });
 
-    uni.setStorageSync(BASELINE_RESULT_KEY, data);
     uni.setStorageSync(COMPLETE_KEY, true);
     uni.removeStorageSync(SCORE_KEY);
     uni.navigateTo({ url: '/pages/assessment/result' });

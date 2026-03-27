@@ -3,25 +3,25 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "Home"
+        "navigationBarTitleText": "首页"
       }
     },
     {
       "path": "pages/assessment/baseline",
       "style": {
-        "navigationBarTitleText": "Baseline"
+        "navigationBarTitleText": "认知基准测试"
       }
     },
     {
       "path": "pages/assessment/result",
       "style": {
-        "navigationBarTitleText": "Assessment Result"
+        "navigationBarTitleText": "测评结果"
       }
     },
     {
       "path": "pages/assessment/history",
       "style": {
-        "navigationBarTitleText": "Assessment History"
+        "navigationBarTitleText": "测评历史"
       }
     },
     {
@@ -45,19 +45,19 @@
     {
       "path": "pages/guides/intro",
       "style": {
-        "navigationBarTitleText": "Game Guide"
+        "navigationBarTitleText": "游戏说明"
       }
     },
     {
       "path": "pages/user/trainingdata",
       "style": {
-        "navigationBarTitleText": "Training Data"
+        "navigationBarTitleText": "训练数据"
       }
     },
     {
       "path": "pages/user/records",
       "style": {
-        "navigationBarTitleText": "Record History"
+        "navigationBarTitleText": "历史记录"
       }
     },
     {
@@ -75,7 +75,7 @@
     {
       "path": "pages/user/player",
       "style": {
-        "navigationBarTitleText": "Player"
+        "navigationBarTitleText": "个人中心"
       }
     }
   ],
@@ -87,19 +87,19 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "Home",
+        "text": "首页",
         "iconPath": "static/tabbar/home.png",
         "selectedIconPath": "static/tabbar/home-active.png"
       },
       {
         "pagePath": "pages/user/trainingdata",
-        "text": "Data",
+        "text": "训练数据",
         "iconPath": "static/tabbar/history.png",
         "selectedIconPath": "static/tabbar/history-active.png"
       },
       {
         "pagePath": "pages/user/player",
-        "text": "Player",
+        "text": "我的",
         "iconPath": "static/tabbar/player.png",
         "selectedIconPath": "static/tabbar/player-active.png"
       }
@@ -107,7 +107,7 @@
   },
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "Brain Training",
+    "navigationBarTitleText": "脑力训练",
     "navigationBarBackgroundColor": "#FFFFFF",
     "backgroundColor": "#F5F7FB"
   }

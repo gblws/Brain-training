@@ -6,7 +6,7 @@
     </view>
 
     <view class="panel">
-      <text class="sub-title">Demo</text>
+      <text class="sub-title">演示</text>
 
       <view v-if="currentGameId === 'schulte'" class="demo schulte">
         <view class="mini-grid schulte-grid">
@@ -38,7 +38,7 @@
           </view>
         </view>
         <view class="cursor stroop-cursor" :style="stroopCursorStyle" />
-        <text class="stroop-round">Demo {{ stroopStep + 1 }}/3</text>
+        <text class="stroop-round">演示 {{ stroopStep + 1 }}/3</text>
       </view>
 
       <view v-else class="demo memory">
@@ -50,18 +50,18 @@
     </view>
 
     <view class="panel">
-      <text class="sub-title">How To Play</text>
+      <text class="sub-title">玩法说明</text>
       <text class="step" v-for="(item, index) in guide.steps" :key="index">
         {{ index + 1 }}. {{ item }}
       </text>
     </view>
 
     <view class="panel">
-      <text class="sub-title">Tips</text>
+      <text class="sub-title">训练提示</text>
       <text class="tip">{{ guide.tip }}</text>
     </view>
 
-    <button class="start-btn" @click="startGame">Start This Game</button>
+    <button class="start-btn" @click="startGame">开始游戏</button>
   </view>
 </template>
 
@@ -71,37 +71,37 @@ import { onLoad } from '@dcloudio/uni-app';
 
 const gameMap = {
   schulte: {
-    title: 'Schulte Grid',
+    title: '舒尔特方格',
     route: '/pages/games/schulte',
-    desc: 'Tap numbers in ascending order as fast as possible.',
+    desc: '按数字从小到大依次点击，越快越好。',
     steps: [
-      'Find and tap number 1.',
-      'Continue tapping 2, 3, 4... in order.',
-      'Finish at number 25.'
+      '先找到并点击数字 1。',
+      '随后继续按顺序点击 2、3、4……',
+      '点击到最后一个数字即完成挑战。'
     ],
-    tip: 'Focus your eyes on the center and use peripheral vision.'
+    tip: '视线尽量聚焦中心，用余光快速捕捉周边数字。'
   },
   stroop: {
-    title: 'Stroop Challenge',
+    title: '斯特鲁普挑战',
     route: '/pages/games/stroop',
-    desc: 'Judge the font color, not the text meaning.',
+    desc: '判断文字的显示颜色，而不是文字本身的含义。',
     steps: [
-      'Read the center word quickly.',
-      'Ignore the word content.',
-      'Tap the button matching the display color.'
+      '快速观察中央文字。',
+      '忽略文字含义本身。',
+      '点击与显示颜色一致的按钮。'
     ],
-    tip: 'Prioritize color recognition speed over reading.'
+    tip: '优先识别颜色，不要让阅读习惯干扰判断。'
   },
   memory: {
-    title: 'Memory Matrix',
+    title: '记忆矩阵',
     route: '/pages/games/memory',
-    desc: 'Remember highlighted cells and reproduce them.',
+    desc: '记住高亮格子的位置，再按原样复现出来。',
     steps: [
-      'Observe highlighted cells during preview.',
-      'Wait for the grid to hide.',
-      'Tap the same cells to pass the level.'
+      '在预览阶段记住高亮格子。',
+      '等待高亮消失后开始作答。',
+      '点击相同格子即可通过当前回合。'
     ],
-    tip: 'Group cells into chunks for easier recall.'
+    tip: '可以把格子分块记忆，会更容易复现。'
   }
 };
 
@@ -179,7 +179,7 @@ const buildStroopRounds = () => {
 
 const currentStroopRound = computed(() => {
   return stroopRounds.value[stroopStep.value] || {
-    word: 'BLUE',
+      word: '蓝色',
     color: '#2563eb',
     correctIndex: 1
   };

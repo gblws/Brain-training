@@ -31,14 +31,19 @@
 
         <view class="auth-field" v-if="authMode === 'register'">
           <view class="field-icon edit-icon"></view>
-          <input
-            v-model="verifyCode"
-            class="auth-input"
-            type="text"
-            maxlength="6"
-            placeholder="请输入验证码"
-            placeholder-class="placeholder"
-          />
+          <view class="verify-wrap">
+            <input
+              v-model="verifyCode"
+              class="auth-input verify-input"
+              type="text"
+              maxlength="6"
+              placeholder="请输入验证码"
+              placeholder-class="placeholder"
+            />
+            <button class="send-code-btn" :disabled="codeSending || countdownSeconds > 0" @click="sendVerifyCode">
+              {{ countdownSeconds > 0 ? `${countdownSeconds}s` : (codeSending ? '发送中' : '发送验证码') }}
+            </button>
+          </view>
         </view>
 
         <button class="auth-submit" @click="submitAuth">{{ authMode === 'login' ? '登录' : '立即注册' }}</button>
@@ -103,7 +108,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 import { clearAuthToken, get, getAuthToken, post, setAuthToken } from '../../utils/request.js';
 
 const authMode = ref('login');
@@ -112,12 +117,15 @@ const loggedIn = ref(false);
 const username = ref('');
 const password = ref('');
 const verifyCode = ref('');
+const codeSending = ref(false);
+const countdownSeconds = ref(0);
 const nickname = ref('');
 const editableNickname = ref('');
 const editingNickname = ref(false);
 const avatarUrl = ref('');
 const historyCount = ref(0);
 const baselineCount = ref(0);
+let countdownTimer = null;
 
 const profile = ref({
   id: null,
@@ -207,11 +215,52 @@ const validateAuth = () => {
     uni.showToast({ title: '请输入密码', icon: 'none' });
     return null;
   }
+  if (authMode.value === 'register' && !/^[A-Za-z0-9]{6,18}$/.test(pass)) {
+    uni.showToast({ title: '密码需为6-18位字母或数字', icon: 'none' });
+    return null;
+  }
   if (authMode.value === 'register' && !code) {
     uni.showToast({ title: '请输入验证码', icon: 'none' });
     return null;
   }
   return { user, pass };
+};
+
+const clearCountdown = () => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+};
+
+const startCountdown = () => {
+  clearCountdown();
+  countdownSeconds.value = 60;
+  countdownTimer = setInterval(() => {
+    countdownSeconds.value -= 1;
+    if (countdownSeconds.value <= 0) {
+      clearCountdown();
+      countdownSeconds.value = 0;
+    }
+  }, 1000);
+};
+
+const sendVerifyCode = async () => {
+  const user = username.value.trim();
+  if (!/^1[3-9]\d{9}$/.test(user)) {
+    uni.showToast({ title: '请先输入有效手机号', icon: 'none' });
+    return;
+  }
+  if (codeSending.value || countdownSeconds.value > 0) return;
+  try {
+    codeSending.value = true;
+    await post('/api/v1/auth/send-code', { username: user });
+    uni.showToast({ title: '验证码已发送', icon: 'none' });
+    startCountdown();
+  } catch (_) {
+  } finally {
+    codeSending.value = false;
+  }
 };
 
 const submitAuth = async () => {
@@ -229,6 +278,7 @@ const submitAuth = async () => {
       data = await post('/api/v1/auth/register', {
         username: payload.user,
         password: payload.pass,
+        verifyCode: verifyCode.value.trim(),
         nickname: ''
       });
     }
@@ -242,6 +292,7 @@ const submitAuth = async () => {
 
 const toggleAuthMode = () => {
   authMode.value = authMode.value === 'login' ? 'register' : 'login';
+  verifyCode.value = '';
 };
 
 const startNicknameEdit = () => {
@@ -357,6 +408,8 @@ const logout = async () => {
   username.value = '';
   password.value = '';
   verifyCode.value = '';
+  clearCountdown();
+  countdownSeconds.value = 0;
   nickname.value = '';
   editableNickname.value = '';
   editingNickname.value = false;
@@ -374,6 +427,9 @@ const logout = async () => {
 };
 
 loadMe();
+onUnmounted(() => {
+  clearCountdown();
+});
 </script>
 
 <style scoped>
@@ -444,11 +500,40 @@ loadMe();
   border: 2rpx solid #2f6f68;
 }
 
+.verify-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
 .auth-input {
   flex: 1;
   height: 100%;
   font-size: 28rpx;
   color: #1f4f49;
+}
+
+.verify-input {
+  min-width: 0;
+}
+
+.send-code-btn {
+  flex-shrink: 0;
+  min-width: 156rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  margin: 0;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: #198b7f;
+  color: #ffffff;
+  font-size: 22rpx;
+}
+
+.send-code-btn[disabled] {
+  background: #94a3b8;
+  color: #ffffff;
 }
 
 .placeholder {

@@ -7,8 +7,8 @@
     <view class="hero">
       <view class="hero-top">
         <view>
-          <text class="hero-title">Training Data</text>
-          <text class="hero-sub">View streaks, duration and top records on one page</text>
+          <text class="hero-title">训练数据</text>
+          <text class="hero-sub">在一页查看连续训练、时长与最高纪录</text>
         </view>
         <view class="refresh-btn" @click="loadHistory">↻</view>
       </view>
@@ -86,9 +86,9 @@ import { get, getAuthToken } from '../../utils/request.js';
 import RecordRankBadge from '../../components/RecordRankBadge.vue';
 
 const GAME_CONFIG = [
-  { key: 'schulte', names: ['Schulte Grid'], label: '舒尔特方格' },
-  { key: 'stroop', names: ['Stroop Challenge'], label: '斯特鲁普挑战' },
-  { key: 'memory', names: ['Memory Matrix'], label: '记忆矩阵' }
+  { key: 'schulte', names: ['Schulte Grid', '舒尔特方格'], label: '舒尔特方格' },
+  { key: 'stroop', names: ['Stroop Challenge', '斯特鲁普挑战'], label: '斯特鲁普挑战' },
+  { key: 'memory', names: ['Memory Matrix', '记忆矩阵'], label: '记忆矩阵' }
 ];
 
 const DIFFICULTY_TEXT_MAP = {

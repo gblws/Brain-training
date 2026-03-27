@@ -81,6 +81,20 @@ public class RedisCacheService {
         }
     }
 
+    public boolean setStringIfAbsent(String key, String value, Duration ttl) {
+        try {
+            Boolean success;
+            if (ttl == null || ttl.isZero() || ttl.isNegative()) {
+                success = stringRedisTemplate.opsForValue().setIfAbsent(key, value);
+            } else {
+                success = stringRedisTemplate.opsForValue().setIfAbsent(key, value, ttl);
+            }
+            return Boolean.TRUE.equals(success);
+        } catch (Exception ignore) {
+            return false;
+        }
+    }
+
     public void delete(String... keys) {
         if (keys == null || keys.length == 0) {
             return;

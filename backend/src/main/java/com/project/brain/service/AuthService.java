@@ -4,9 +4,12 @@ import com.project.brain.dto.AuthLoginRequest;
 import com.project.brain.dto.AuthLoginResponse;
 import com.project.brain.dto.AuthProfileUpdateRequest;
 import com.project.brain.dto.AuthRegisterRequest;
+import com.project.brain.dto.AuthSendCodeRequest;
 import com.project.brain.dto.AuthUserResponse;
 
 public interface AuthService {
+
+    void sendRegisterCode(AuthSendCodeRequest request);
 
     AuthLoginResponse register(AuthRegisterRequest request);
 

@@ -75,13 +75,13 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
-import { get } from '../../utils/request.js';
+import { get, getAuthToken } from '../../utils/request.js';
 
 const loading = ref(false);
 const baselineHistory = ref([]);
 const period = ref('month');
 const ability = ref('overall');
-const ENABLE_TEMP_WEEK_MOCK = true;
+const redirectingToLogin = ref(false);
 
 const periodOptions = [
   { key: 'week', label: '近一周' },
@@ -256,38 +256,38 @@ const xTicks = computed(() => {
 });
 
 const loadTrend = async () => {
+  if (!getAuthToken()) {
+    baselineHistory.value = [];
+    if (!redirectingToLogin.value) {
+      redirectingToLogin.value = true;
+      uni.showModal({
+        title: '请先登录',
+        content: '登录后才可以查看数据分析。',
+        showCancel: false,
+        confirmText: '去登录',
+        success: () => {
+          uni.switchTab({ url: '/pages/user/player' });
+        },
+        complete: () => {
+          setTimeout(() => {
+            redirectingToLogin.value = false;
+          }, 300);
+        }
+      });
+    }
+    return;
+  }
   try {
     loading.value = true;
     const data = await get('/api/v1/baseline/history');
     const realData = Array.isArray(data) ? data : [];
-    baselineHistory.value = ENABLE_TEMP_WEEK_MOCK ? buildMockWeekData() : realData;
+    baselineHistory.value = realData;
   } catch (error) {
     console.error('trend load error', error);
-    baselineHistory.value = ENABLE_TEMP_WEEK_MOCK ? buildMockWeekData() : [];
+    baselineHistory.value = [];
   } finally {
     loading.value = false;
   }
-};
-
-const buildMockWeekData = () => {
-  const dayMs = 24 * 60 * 60 * 1000;
-  const now = new Date();
-  const dayScores = [62, 68, 65, 72, 78, 74, 81];
-  return dayScores.map((score, idx) => {
-    const date = new Date(now.getTime() - (dayScores.length - 1 - idx) * dayMs);
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return {
-      createTime: `${y}-${m}-${d}T10:00:00`,
-      observationScore: score,
-      memoryScoreDimension: Math.max(0, Math.min(100, score - 2)),
-      spatialScore: Math.max(0, Math.min(100, score + 3)),
-      calculationScore: Math.max(0, Math.min(100, score - 1)),
-      reasoningScore: Math.max(0, Math.min(100, score + 1)),
-      creativityScore: 50
-    };
-  });
 };
 
 onShow(() => {

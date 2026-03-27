@@ -1,6 +1,6 @@
-﻿<template>
+<template>
   <view class="page">
-    <view class="card">
+    <view class="card" v-if="result">
       <text class="title">基准测试结果（{{ result?.matrixVersion || 'v1' }}）</text>
       <canvas class="radar-canvas" canvas-id="radarCanvas" id="radarCanvas" width="320" height="320" />
 
@@ -15,6 +15,11 @@
 
       <button class="history-btn" @click="goHistory">查看历史测试数据</button>
     </view>
+
+    <view v-else class="card empty-card">
+      <text class="title">基准测试结果</text>
+      <text class="empty-text">{{ loading ? '加载中...' : '暂无测试结果，请先完成认知基准测试。' }}</text>
+    </view>
   </view>
 </template>
 
@@ -23,10 +28,10 @@ import { nextTick, ref } from 'vue';
 import { onLoad, onReady } from '@dcloudio/uni-app';
 import { get } from '../../utils/request.js';
 
-const RESULT_KEY = 'baseline_latest_result_v1';
 const SELECTED_RESULT_KEY = 'baseline_selected_result_v1';
 
 const result = ref(null);
+const loading = ref(false);
 
 const dims = [
   { key: 'observationScore', label: '观察力', unlocked: true },
@@ -150,13 +155,18 @@ const drawRadar = () => {
 
 const loadLatestFromApi = async () => {
   try {
+    loading.value = true;
     const data = await get('/api/v1/baseline/latest');
     if (data) {
       result.value = data;
-      uni.setStorageSync(RESULT_KEY, data);
+      return;
     }
+    result.value = null;
   } catch (error) {
     console.error('load baseline latest error', error);
+    result.value = null;
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -170,24 +180,20 @@ onLoad(async (query) => {
     if (selected && typeof selected === 'object') {
       result.value = selected;
     }
+    return;
   }
 
-  if (!result.value) {
-    const local = uni.getStorageSync(RESULT_KEY);
-    if (local && typeof local === 'object') {
-      result.value = local;
-    } else {
-      await loadLatestFromApi();
-    }
-  }
+  await loadLatestFromApi();
 });
 
 onReady(async () => {
   if (!result.value) {
     await loadLatestFromApi();
   }
-  await nextTick();
-  drawRadar();
+  if (result.value) {
+    await nextTick();
+    drawRadar();
+  }
 });
 </script>
 
@@ -239,5 +245,17 @@ onReady(async () => {
   color: #0f172a;
   border-radius: 12rpx;
   border: 2rpx solid #cbd5e1;
+}
+
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.empty-text {
+  color: #64748b;
+  font-size: 26rpx;
+  line-height: 1.7;
 }
 </style>

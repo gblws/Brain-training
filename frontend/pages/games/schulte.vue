@@ -14,7 +14,7 @@
         <text class="pill-value">{{ elapsedSeconds }}s</text>
       </view>
       <view class="help-btn" @click="goGuide">?</view>
-      <button class="restart" @click="initGame">Restart</button>
+      <button class="restart" @click="initGame">重新开始</button>
     </view>
 
     <view class="board">
@@ -82,7 +82,7 @@ let timer = null;
 const elapsedSeconds = computed(() => (elapsed.value / 1000).toFixed(1));
 const activeConfig = computed(() => (isBaselineMode.value ? BASELINE_CONFIG : LEVEL_CONFIG[currentLevel.value] || LEVEL_CONFIG[2]));
 const maxNumber = computed(() => activeConfig.value.gridSize * activeConfig.value.gridSize);
-const targetLabel = computed(() => (nextNumber.value > maxNumber.value ? 'Finish' : nextNumber.value));
+const targetLabel = computed(() => (nextNumber.value > maxNumber.value ? '完成' : nextNumber.value));
 const difficultyLabel = computed(() => (isBaselineMode.value ? '基准' : activeConfig.value.name));
 const canLowerLevel = computed(() => currentLevel.value > MIN_LEVEL);
 const feedbackClass = computed(() => (feedbackType.value === 'fail' ? 'fail' : feedbackType.value === 'success' ? 'success' : 'mid'));

@@ -3,8 +3,8 @@
     <view class="panel">
       <view class="status">
         <text class="stat">难度 {{ currentLevelName }}</text>
-        <text class="stat">Round {{ currentRound }}/{{ totalRounds }}</text>
-        <text class="stat">Left {{ remainingSeconds }}s</text>
+        <text class="stat">回合 {{ currentRound }}/{{ totalRounds }}</text>
+        <text class="stat">剩余 {{ remainingSeconds }}秒</text>
         <view class="help-btn" @click="goGuide">?</view>
       </view>
       <view class="focus-card">
@@ -49,11 +49,11 @@ const LEVEL_CONFIG = {
   4: { name: '噩梦', rounds: 25, perRoundMs: 800 }
 };
 const colorOptions = [
-  { label: 'RED', value: '#e11d48' },
-  { label: 'BLUE', value: '#3b82f6' },
-  { label: 'GREEN', value: '#22c55e' },
-  { label: 'YELLOW', value: '#f59e0b' },
-  { label: 'BLACK', value: '#111111' }
+  { label: '红色', value: '#e11d48' },
+  { label: '蓝色', value: '#3b82f6' },
+  { label: '绿色', value: '#22c55e' },
+  { label: '黄色', value: '#f59e0b' },
+  { label: '黑色', value: '#111111' }
 ];
 const words = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'BLACK'];
 
